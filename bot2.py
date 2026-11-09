@@ -1,4 +1,4 @@
-import os, sqlite3, datetime, logging
+import os, sqlite3, datetime, logging, asyncio
 import httpx
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -6,6 +6,12 @@ from telegram.ext import (
     Application, CommandHandler, MessageHandler,
     CallbackQueryHandler, filters, ContextTypes
 )
+
+# Render (Python 3.14) Event Loop Fix
+try:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+except Exception:
+    pass
 
 load_dotenv()
 

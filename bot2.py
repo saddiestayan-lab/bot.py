@@ -1,5 +1,7 @@
 import os, sqlite3, datetime, logging, asyncio
 import httpx
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import threading
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -7,11 +9,26 @@ from telegram.ext import (
     CallbackQueryHandler, filters, ContextTypes
 )
 
-# Render (Python 3.14) Event Loop Fix
+# Event Loop Fix for Render
 try:
     asyncio.set_event_loop(asyncio.new_event_loop())
 except Exception:
     pass
+
+# Fake Web Server for Render & UptimeRobot (Taaki bot 'Down' na dikhe)
+class HealthCheck(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+def run_health_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(('0.0.0.0', port), HealthCheck)
+    server.serve_forever()
+
+threading.Thread(target=run_health_server, daemon=True).start()
+# -------------------------------------------------------------
 
 load_dotenv()
 
